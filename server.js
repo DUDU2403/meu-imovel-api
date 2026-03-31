@@ -18,8 +18,6 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-// Ajuste para Express v5 / Node 22: Usamos um caminho nomeado para evitar erro de PathError
-app.options('/:any*', cors(corsOptions)); 
 
 // --- CONEXÃO COM MONGODB ---
 const connectDB = async () => {
