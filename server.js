@@ -8,7 +8,15 @@ require('dotenv').config();
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+
+// Configuração detalhada do CORS para aceitar sua Vercel e headers personalizados
+app.use(cors({
+  origin: ['https://meu-imovel-5nvo0cyk0-dudu2403s-projects.vercel.app', 'http://localhost:5173'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'x-auth-token'],
+  credentials: true
+}));
+app.options('*', cors()); // Habilita pre-flight para todas as rotas
 
 // Conexão com MongoDB
 const connectDB = async () => {
