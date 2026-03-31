@@ -165,8 +165,12 @@ app.post('/auth/login', async (req, res) => {
 
 // ROTA 1: Buscar todos (Aberto para todos verem)
 app.get('/imoveis', async (req, res) => {
-    const imoveis = await Imovel.find().populate('criadoPor', 'nome email');
-    res.json(imoveis);
+    try {
+        const imoveis = await Imovel.find().populate('criadoPor', 'nome email');
+        res.json(imoveis);
+    } catch (err) {
+        res.status(500).json({ message: "Erro ao carregar imóveis." });
+    }
 });
 
 // ROTA: Buscar Oportunidades de Match (Exclusivo para Assinantes)
