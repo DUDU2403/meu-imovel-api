@@ -16,7 +16,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'x-auth-token'],
   credentials: true
 }));
-app.options('*', cors()); // Habilita pre-flight para todas as rotas
+app.use(cors(corsOptions)); // Habilita pre-flight para todas as rotas
 
 // Conexão com MongoDB
 const connectDB = async () => {
