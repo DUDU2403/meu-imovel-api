@@ -129,7 +129,8 @@ app.post('/auth/register', async (req, res) => {
 
     res.json({ message: "Cadastro realizado com sucesso!" });
   } catch (err) {
-    res.status(500).json({ message: "Erro ao registrar usuário." });
+    console.error(err);
+    res.status(500).json({ message: "Erro interno ao registrar usuário: " + err.message });
   }
 });
 
