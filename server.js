@@ -11,7 +11,7 @@ app.use(express.json());
 
 // --- CONFIGURAÇÃO DO CORS CORRIGIDA ---
 const corsOptions = {
-  origin: ['https://meu-imovel-5nvo0cyk0-dudu2403s-projects.vercel.app', 'http://localhost:5173'],
+  origin: ['https://meu-imovel-app.vercel.app', 'http://localhost:5173'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'x-auth-token', 'Authorization'],
   credentials: true
