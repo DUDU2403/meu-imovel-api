@@ -13,6 +13,10 @@ app.use(cors());
 // Conexão com MongoDB
 const connectDB = async () => {
   try {
+    if (!process.env.MONGO_URI) {
+      console.error("❌ ERRO: Variável MONGO_URI não encontrada no arquivo .env");
+      return;
+    }
     await mongoose.connect(process.env.MONGO_URI);
     console.log("✅ BANCO CONECTADO");
   } catch (err) {
@@ -141,7 +145,17 @@ app.post('/auth/login', async (req, res) => {
 
     // Gera o Token
     const token = jwt.sign({ id: user._id, nome: user.nome }, process.env.JWT_SECRET || 'fallback_secret_para_dev');
-    res.json({ token, user: { id: user._id, nome: user.nome, isSubscriptionActive: user.isSubscriptionActive } });
+    
+    // Retorna os dados necessários para o frontend controlar o acesso
+    res.json({ 
+      token, 
+      user: { 
+        id: user._id, 
+        nome: user.nome, 
+        isSubscriptionActive: user.isSubscriptionActive,
+        subscriptionExpires: user.subscriptionExpires 
+      } 
+    });
   } catch (err) {
     res.status(500).json({ message: "Erro ao fazer login." });
   }
