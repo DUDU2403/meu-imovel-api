@@ -10,14 +10,14 @@ const app = express();
 app.use(express.json());
 
 // Configuração detalhada do CORS para aceitar sua Vercel e headers personalizados
-aapp.use(cors(corsOptions));
-app.options('*all', cors(corsOptions));
+const corsOptions = {
   origin: ['https://meu-imovel-5nvo0cyk0-dudu2403s-projects.vercel.app', 'http://localhost:5173'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'x-auth-token'],
+  allowedHeaders: ['Content-Type', 'x-auth-token', 'Authorization'],
   credentials: true
-}));
-app.use(cors(corsOptions)); // Habilita pre-flight para todas as rotas
+};
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // Conexão com MongoDB
 const connectDB = async () => {
