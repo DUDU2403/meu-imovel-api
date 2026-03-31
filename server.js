@@ -10,7 +10,8 @@ const app = express();
 app.use(express.json());
 
 // Configuração detalhada do CORS para aceitar sua Vercel e headers personalizados
-app.use(cors({
+aapp.use(cors(corsOptions));
+app.options('*all', cors(corsOptions));
   origin: ['https://meu-imovel-5nvo0cyk0-dudu2403s-projects.vercel.app', 'http://localhost:5173'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'x-auth-token'],
