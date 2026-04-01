@@ -7,24 +7,20 @@ const axios = require('axios');
 require('dotenv').config();
 
 const app = express();
-app.use(express.json());
 
 // --- CONFIGURAÇÃO DO CORS CORRIGIDA ---
-const corsOptions = {
-  origin: ['https://meu-imovel-app.vercel.app', 'http://localhost:5173'],
+app.use(cors({
+  origin: [
+    'https://meu-imovel-app.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:3000'
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token'],
-  credentials: true,
-  optionsSuccessStatus: 200 // MUITO IMPORTANTE: Resolve o erro 404 no preflight
-};
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 
-app.use(cors(corsOptions));
-
-app.options('*', cors(corsOptions));
-
-app.use('/auth', authRoutes);
-
-app.use('/imoveis', imoveisRoutes);
+app.use(express.json());
 
 // --- CONEXÃO COM MONGODB ---
 const connectDB = async () => {
