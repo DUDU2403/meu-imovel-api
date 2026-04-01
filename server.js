@@ -13,9 +13,16 @@ app.use(express.json());
 const corsOptions = {
   origin: ['https://meu-imovel-app.vercel.app', 'http://localhost:5173'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'x-auth-token', 'Authorization'],
-  credentials: true
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token'],
+  credentials: true,
+  optionsSuccessStatus: 200 // MUITO IMPORTANTE: Resolve o erro 404 no preflight
 };
+
+app.use(cors(corsOptions));
+
+app.options('*', cors(corsOptions));
+
+app.use('/auth', authRoutes);
 
 app.use(cors(corsOptions));
 
