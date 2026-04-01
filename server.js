@@ -24,7 +24,7 @@ app.options('*', cors(corsOptions));
 
 app.use('/auth', authRoutes);
 
-app.use(cors(corsOptions));
+app.use('/imoveis', imoveisRoutes);
 
 // --- CONEXÃO COM MONGODB ---
 const connectDB = async () => {
