@@ -15,6 +15,7 @@ app.use(cors({
   origin: (origin, callback) => {
     const allowed = [
       'https://webstory-app.vercel.app',
+      'https://web-story-frontend-sooty.vercel.app',
       'http://localhost:5173',
       'http://localhost:3000'
     ];
@@ -28,6 +29,15 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token'],
   credentials: true
 }));
+
+// Responde preflight OPTIONS imediatamente
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,x-auth-token');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.sendStatus(204);
+});
 
 app.use(express.json());
 
