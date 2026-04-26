@@ -325,7 +325,6 @@ app.delete('/admin/chaves/:id', adminAuth, async (req, res) => {
   try {
     const c = await Chave.findById(req.params.id);
     if (!c) return res.status(404).json({ message: 'Chave não encontrada.' });
-    if (c.usada) return res.status(400).json({ message: 'Chave já utilizada.' });
     await c.deleteOne();
     res.json({ message: 'Removida.' });
   } catch (e) { res.status(500).json({ message: e.message }); }
@@ -416,7 +415,7 @@ app.put('/loja/perfil', donoAuth, async (req, res) => {
 // Info pública da loja (para o frontend carregar nome, banner, etc.)
 app.get('/loja/info', async (req, res) => {
   try {
-    const loja = await Loja.findOne({ ativa: true }, '-senha -chaveAcesso -email -cnpj').sort({ criadaEm: 1 });
+    const loja = await Loja.findOne({}, '-senha -chaveAcesso -email -cnpj').sort({ criadaEm: 1 });
     if (!loja) return res.status(404).json({ message: 'Loja não encontrada.' });
     res.json(loja);
   } catch (e) { res.status(500).json({ message: e.message }); }
@@ -494,7 +493,7 @@ app.post('/clientes/register', async (req, res) => {
     if (!nome || !username || !email || !senha || !telefone)
       return res.status(400).json({ message: 'Preencha todos os campos obrigatórios.' });
 
-    const loja = await Loja.findOne({ ativa: true }).sort({ criadaEm: 1 });
+    const loja = await Loja.findOne().sort({ criadaEm: 1 });
     if (!loja) return res.status(404).json({ message: 'Loja não encontrada.' });
 
     if (await Cliente.findOne({ lojaId: loja._id, email }))
@@ -518,7 +517,7 @@ app.post('/clientes/register', async (req, res) => {
 app.post('/clientes/login', async (req, res) => {
   try {
     const { email, senha } = req.body;
-    const loja = await Loja.findOne({ ativa: true }).sort({ criadaEm: 1 });
+    const loja = await Loja.findOne().sort({ criadaEm: 1 });
     if (!loja) return res.status(404).json({ message: 'Loja não encontrada.' });
 
     const cliente = await Cliente.findOne({ lojaId: loja._id, email });
@@ -556,7 +555,7 @@ app.get('/clientes', lojaAuth, async (req, res) => {
 // Público — vitrine
 app.get('/produtos', async (req, res) => {
   try {
-    const loja = await Loja.findOne({ ativa: true }).sort({ criadaEm: 1 });
+    const loja = await Loja.findOne().sort({ criadaEm: 1 });
     if (!loja) return res.status(404).json({ message: 'Loja não encontrada.' });
 
     const { busca, categoria, promocao, ordem } = req.query;
@@ -578,7 +577,7 @@ app.get('/produtos', async (req, res) => {
 // Sugestão para autocomplete
 app.get('/produtos/sugestoes', async (req, res) => {
   try {
-    const loja = await Loja.findOne({ ativa: true }).sort({ criadaEm: 1 });
+    const loja = await Loja.findOne().sort({ criadaEm: 1 });
     const { busca } = req.query;
     if (!busca || busca.length < 2) return res.json([]);
     const produtos = await Produto.find(
@@ -592,7 +591,7 @@ app.get('/produtos/sugestoes', async (req, res) => {
 // Categorias disponíveis
 app.get('/produtos/categorias', async (req, res) => {
   try {
-    const loja = await Loja.findOne({ ativa: true }).sort({ criadaEm: 1 });
+    const loja = await Loja.findOne().sort({ criadaEm: 1 });
     const cats = await Produto.distinct('categoria', { lojaId: loja._id, ativo: true });
     res.json(cats.filter(Boolean));
   } catch (e) { res.status(500).json({ message: e.message }); }
