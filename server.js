@@ -239,6 +239,53 @@ const clienteAuth = (req, res, next) => {
 };
 
 // ============================================================
+// HELPER: UPLOAD DE IMAGEM
+// ============================================================
+const validarImagem = (base64) => {
+  if (!base64 || typeof base64 !== 'string') return false;
+  // Verifica tamanho máximo (5MB em base64 = ~3.75MB em bytes)
+  if (base64.length > 5 * 1024 * 1024) return false;
+  // Valida prefixo de data URL
+  return base64.startsWith('data:image/') && base64.includes('base64,');
+};
+
+// ============================================================
+// ROTAS: UPLOAD
+// ============================================================
+app.post('/upload', lojaAuth, async (req, res) => {
+  try {
+    const { imagem, tipo } = req.body;
+    if (!imagem || !['perfil', 'banner'].includes(tipo)) {
+      return res.status(400).json({ message: 'Imagem e tipo são obrigatórios.' });
+    }
+    if (!validarImagem(imagem)) {
+      return res.status(400).json({ message: 'Imagem inválida ou muito grande.' });
+    }
+
+    const loja = await Loja.findById(req.loja.id);
+    if (!loja) return res.status(404).json({ message: 'Loja não encontrada.' });
+
+    if (tipo === 'perfil') loja.fotoPerfil = imagem;
+    else if (tipo === 'banner') loja.bannerFundo = imagem;
+
+    await loja.save();
+    res.json({ message: 'Imagem enviada!', [tipo === 'perfil' ? 'fotoPerfil' : 'bannerFundo']: imagem });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.post('/upload/produto', lojaAuth, async (req, res) => {
+  try {
+    const { imagem } = req.body;
+    if (!imagem) return res.status(400).json({ message: 'Imagem obrigatória.' });
+    if (!validarImagem(imagem)) {
+      return res.status(400).json({ message: 'Imagem inválida ou muito grande.' });
+    }
+    // Retorna a imagem em base64 para o frontend usar
+    res.json({ imagemUrl: imagem });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// ============================================================
 // ROTAS: ADMIN
 // ============================================================
 
