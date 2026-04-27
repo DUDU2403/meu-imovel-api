@@ -4,7 +4,7 @@ const cors     = require('cors');
 const bcrypt   = require('bcryptjs');
 const jwt      = require('jsonwebtoken');
 const crypto   = require('crypto');
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 
 const app = express();
 const ADMIN_EMAIL  = process.env.ADMIN_EMAIL  || 'admin@webstory.com';
@@ -23,13 +23,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type','Authorization','x-auth-token'],
   credentials: true,
 }));
-app.options('*', (req, res) => {
-  res.header('Access-Control-Allow-Origin',  req.headers.origin || '*');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,x-auth-token');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.sendStatus(204);
-});
 app.use(express.json());
 
 // ── DB ───────────────────────────────────────────────────────
