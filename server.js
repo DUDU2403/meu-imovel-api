@@ -4,7 +4,7 @@ const cors     = require('cors');
 const bcrypt   = require('bcryptjs');
 const jwt      = require('jsonwebtoken');
 const crypto   = require('crypto');
-require('dotenv').config({ path: require('path').join(__dirname, '.env') });
+require('dotenv').config();
 
 const app = express();
 const ADMIN_EMAIL  = process.env.ADMIN_EMAIL  || 'admin@webstory.com';
@@ -23,6 +23,13 @@ app.use(cors({
   allowedHeaders: ['Content-Type','Authorization','x-auth-token'],
   credentials: true,
 }));
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin',  req.headers.origin || '*');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,x-auth-token');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.sendStatus(204);
+});
 app.use(express.json());
 
 // ── DB ───────────────────────────────────────────────────────
@@ -232,53 +239,6 @@ const clienteAuth = (req, res, next) => {
 };
 
 // ============================================================
-// HELPER: UPLOAD DE IMAGEM
-// ============================================================
-const validarImagem = (base64) => {
-  if (!base64 || typeof base64 !== 'string') return false;
-  // Verifica tamanho máximo (5MB em base64 = ~3.75MB em bytes)
-  if (base64.length > 5 * 1024 * 1024) return false;
-  // Valida prefixo de data URL
-  return base64.startsWith('data:image/') && base64.includes('base64,');
-};
-
-// ============================================================
-// ROTAS: UPLOAD
-// ============================================================
-app.post('/upload', lojaAuth, async (req, res) => {
-  try {
-    const { imagem, tipo } = req.body;
-    if (!imagem || !['perfil', 'banner'].includes(tipo)) {
-      return res.status(400).json({ message: 'Imagem e tipo são obrigatórios.' });
-    }
-    if (!validarImagem(imagem)) {
-      return res.status(400).json({ message: 'Imagem inválida ou muito grande.' });
-    }
-
-    const loja = await Loja.findById(req.loja.id);
-    if (!loja) return res.status(404).json({ message: 'Loja não encontrada.' });
-
-    if (tipo === 'perfil') loja.fotoPerfil = imagem;
-    else if (tipo === 'banner') loja.bannerFundo = imagem;
-
-    await loja.save();
-    res.json({ message: 'Imagem enviada!', [tipo === 'perfil' ? 'fotoPerfil' : 'bannerFundo']: imagem });
-  } catch (e) { res.status(500).json({ message: e.message }); }
-});
-
-app.post('/upload/produto', lojaAuth, async (req, res) => {
-  try {
-    const { imagem } = req.body;
-    if (!imagem) return res.status(400).json({ message: 'Imagem obrigatória.' });
-    if (!validarImagem(imagem)) {
-      return res.status(400).json({ message: 'Imagem inválida ou muito grande.' });
-    }
-    // Retorna a imagem em base64 para o frontend usar
-    res.json({ imagemUrl: imagem });
-  } catch (e) { res.status(500).json({ message: e.message }); }
-});
-
-// ============================================================
 // ROTAS: ADMIN
 // ============================================================
 
@@ -408,7 +368,7 @@ app.put('/loja/perfil', donoAuth, async (req, res) => {
 // Info pública da loja (para o frontend carregar nome, banner, etc.)
 app.get('/loja/info', async (req, res) => {
   try {
-    const loja = await Loja.findOne({}, '-senha -chaveAcesso -email -cnpj').sort({ criadaEm: 1 });
+    const loja = await Loja.findOne({ ativa: true }, '-senha -chaveAcesso -email -cnpj').sort({ criadaEm: 1 });
     if (!loja) return res.status(404).json({ message: 'Loja não encontrada.' });
     res.json(loja);
   } catch (e) { res.status(500).json({ message: e.message }); }
@@ -486,7 +446,7 @@ app.post('/clientes/register', async (req, res) => {
     if (!nome || !username || !email || !senha || !telefone)
       return res.status(400).json({ message: 'Preencha todos os campos obrigatórios.' });
 
-    const loja = await Loja.findOne().sort({ criadaEm: 1 });
+    const loja = await Loja.findOne({ ativa: true }).sort({ criadaEm: 1 });
     if (!loja) return res.status(404).json({ message: 'Loja não encontrada.' });
 
     if (await Cliente.findOne({ lojaId: loja._id, email }))
@@ -510,7 +470,7 @@ app.post('/clientes/register', async (req, res) => {
 app.post('/clientes/login', async (req, res) => {
   try {
     const { email, senha } = req.body;
-    const loja = await Loja.findOne().sort({ criadaEm: 1 });
+    const loja = await Loja.findOne({ ativa: true }).sort({ criadaEm: 1 });
     if (!loja) return res.status(404).json({ message: 'Loja não encontrada.' });
 
     const cliente = await Cliente.findOne({ lojaId: loja._id, email });
@@ -548,7 +508,7 @@ app.get('/clientes', lojaAuth, async (req, res) => {
 // Público — vitrine
 app.get('/produtos', async (req, res) => {
   try {
-    const loja = await Loja.findOne().sort({ criadaEm: 1 });
+    const loja = await Loja.findOne({ ativa: true }).sort({ criadaEm: 1 });
     if (!loja) return res.status(404).json({ message: 'Loja não encontrada.' });
 
     const { busca, categoria, promocao, ordem } = req.query;
@@ -570,7 +530,7 @@ app.get('/produtos', async (req, res) => {
 // Sugestão para autocomplete
 app.get('/produtos/sugestoes', async (req, res) => {
   try {
-    const loja = await Loja.findOne().sort({ criadaEm: 1 });
+    const loja = await Loja.findOne({ ativa: true }).sort({ criadaEm: 1 });
     const { busca } = req.query;
     if (!busca || busca.length < 2) return res.json([]);
     const produtos = await Produto.find(
@@ -584,7 +544,7 @@ app.get('/produtos/sugestoes', async (req, res) => {
 // Categorias disponíveis
 app.get('/produtos/categorias', async (req, res) => {
   try {
-    const loja = await Loja.findOne().sort({ criadaEm: 1 });
+    const loja = await Loja.findOne({ ativa: true }).sort({ criadaEm: 1 });
     const cats = await Produto.distinct('categoria', { lojaId: loja._id, ativo: true });
     res.json(cats.filter(Boolean));
   } catch (e) { res.status(500).json({ message: e.message }); }
